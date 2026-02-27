@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const supabase = await createClient();
   const now = new Date();
+  // Fixed date for static/topic/browse pages — only update when content actually changes
+  const staticDate = new Date("2026-02-28");
 
   // Fetch all works with their regulation type codes and updated_at
   const { data: works } = await supabase
@@ -26,11 +28,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const STATIC_PATHS = ["", "/jelajahi", "/connect", "/api", "/topik"];
   const staticPages: MetadataRoute.Sitemap = STATIC_PATHS.map((path) => ({
     url: `${BASE}${path}`,
-    lastModified: now,
+    lastModified: staticDate,
     alternates: {
       languages: {
         id: `${BASE}${path}`,
         en: `${BASE}/en${path}`,
+        "x-default": `${BASE}${path}`,
       },
     },
     changeFrequency: path === "" ? "weekly" : "monthly",
@@ -40,11 +43,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Topic pages with language alternates
   const topicPages: MetadataRoute.Sitemap = TOPICS.map((topic) => ({
     url: `${BASE}/topik/${topic.slug}`,
-    lastModified: now,
+    lastModified: staticDate,
     alternates: {
       languages: {
         id: `${BASE}/topik/${topic.slug}`,
         en: `${BASE}/en/topik/${topic.slug}`,
+        "x-default": `${BASE}/topik/${topic.slug}`,
       },
     },
     changeFrequency: "monthly" as const,
@@ -61,11 +65,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       const typePath = `/jelajahi/${rt.code.toLowerCase()}`;
       return {
         url: `${BASE}${typePath}`,
-        lastModified: now,
+        lastModified: staticDate,
         alternates: {
           languages: {
             id: `${BASE}${typePath}`,
             en: `${BASE}/en${typePath}`,
+            "x-default": `${BASE}${typePath}`,
           },
         },
         changeFrequency: "weekly" as const,
@@ -87,6 +92,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
           languages: {
             id: `${BASE}${path}`,
             en: `${BASE}/en${path}`,
+            "x-default": `${BASE}${path}`,
           },
         },
         changeFrequency: "yearly" as const,

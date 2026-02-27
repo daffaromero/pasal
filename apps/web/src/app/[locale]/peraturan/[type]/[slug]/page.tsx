@@ -93,11 +93,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   // TYPE_LABELS stay in Indonesian — they are official legal nomenclature
   const typeLabel = TYPE_LABELS[type.toUpperCase()] || type.toUpperCase();
-  const title = `${work.title_id} | ${formatRegRef(type, work.number, work.year, { label: "long" })}`;
+  // Extract topic (e.g. "KETENAGAKERJAAN") from title_id to avoid duplication in <title>
+  const tentangIdx = work.title_id.toLowerCase().indexOf(" tentang ");
+  const topic = tentangIdx >= 0 ? work.title_id.slice(tentangIdx + 9) : work.title_id;
   const regRef = formatRegRef(type, work.number, work.year, { label: "long" });
+  const title = `${topic} — ${formatRegRef(type, work.number, work.year)}`;
   const description = t("readFullText", {
     ref: regRef,
-    title: work.title_id,
+    title: topic,
   }) + ` Status: ${statusT(work.status as "berlaku" | "diubah" | "dicabut" | "tidak_berlaku")}.`;
   const path = `/peraturan/${type.toLowerCase()}/${slug}`;
   const url = `https://pasal.id${path}`;
@@ -386,7 +389,7 @@ async function LawReaderSection({
           )}
 
           <div className="rounded-lg border p-4">
-            <h3 className="font-heading text-sm mb-3">Bagikan</h3>
+            <h3 className="font-heading text-sm mb-3">{t("shareLabel")}</h3>
             <ShareButton
               url={pageUrl}
               title={`${formatRegRef(type, work.number, work.year)} — ${work.title_id}`}
@@ -450,7 +453,7 @@ export default async function LawDetailPage({ params }: PageProps) {
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: t("breadcrumbHome"), item: "https://pasal.id" },
-      { "@type": "ListItem", position: 2, name: type.toUpperCase(), item: `https://pasal.id/search?type=${type.toLowerCase()}` },
+      { "@type": "ListItem", position: 2, name: type.toUpperCase(), item: `https://pasal.id/jelajahi/${type.toLowerCase()}` },
       { "@type": "ListItem", position: 3, name: formatRegRef(type, work.number, work.year) },
     ],
   };
